@@ -1,5 +1,7 @@
-FROM balenalib/raspberrypi3:run
+FROM balenalib/raspberrypi3-python:run
+RUN install_packages uhubctl
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY subscribe.py ./
 
-RUN install-packages uhubctl
-
-CMD uhubctl && uhubctl -l 1-1 -p 2 -a 0 && uhubctl
+CMD python subscribe.py
