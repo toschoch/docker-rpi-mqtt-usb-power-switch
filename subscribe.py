@@ -24,8 +24,8 @@ if os.path.isfile(credentials):
 else:
     username, pw = credentials.split(':')
 
-#cmd = ['uhubctl', '-l', '1-1', '-p 2', '-a']
-cmd = ['echo', 'value']
+cmd = ['uhubctl', '-l', '1-1', '-p 2', '-a']
+#cmd = ['echo', 'value']
 
 state_on = True
 
