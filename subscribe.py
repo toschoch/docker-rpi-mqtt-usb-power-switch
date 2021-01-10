@@ -40,9 +40,9 @@ def switch_on():
     log.info("switch power on..")
     on_cmd = cmd + ['1']
     log.debug("send command: {}".format(' '.join(on_cmd)))
-    ret = subprocess.check_output(on_cmd)
+    ret = subprocess.check_output(on_cmd).decode('utf-8').strip()
     log.debug("command returned: {}".format(ret))
-    if ret.decode('utf-8').endswith("power"):
+    if ret.endswith("power"):
         log.info("usb power switched on")
         state_on = True
         publish_on(client)
@@ -53,9 +53,9 @@ def switch_off():
     log.info("switch power off..")
     off_cmd = cmd + ['0']
     log.debug("send command: {}".format(' '.join(off_cmd)))
-    ret = subprocess.check_output(off_cmd)
+    ret = subprocess.check_output(off_cmd).decode('utf-8').strip()
     log.debug("command returned: {}".format(ret))
-    if ret.decode('utf-8').endswith("off"):
+    if ret.endswith("off"):
         log.info("usb power switched off")
         state_on = False
         publish_off(client)
