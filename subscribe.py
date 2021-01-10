@@ -66,11 +66,11 @@ def subscribe(client, userdata, flags, rc):
 
 
 def publish_on(client, userdata=None, flags=None, rc=None):
-    client.publish(publish_topic, payload=1)
+    client.publish(publish_topic, payload=1, qos=1, retain=True)
 
 
 def publish_off(client, userdata=None, flags=None, rc=None):
-    client.publish(publish_topic, payload=0)
+    client.publish(publish_topic, payload=0, qos=1, retain=True)
 
 
 # Function to process received message
