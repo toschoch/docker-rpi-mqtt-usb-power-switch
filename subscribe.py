@@ -1,7 +1,6 @@
 import paho.mqtt.client as mqtt
 from dotenv import load_dotenv
 import os
-import time
 from urllib.parse import urlparse
 import logging
 import subprocess
@@ -15,6 +14,7 @@ service_name = "mqtt-usb-power-switch"
 device_name = os.environ['BALENA_DEVICE_NAME_AT_INIT']
 mqtt_broker_address = urlparse(os.environ['MQTT_BROKER_ADDRESS'])
 topic = "{}/usb/power/toggle".format(device_name)
+publish_topic = "{}/usb/power/state".format(device_name)
 
 # credentials
 credentials = os.environ['MQTT_CREDENTIALS']
@@ -24,10 +24,15 @@ if os.path.isfile(credentials):
 else:
     username, pw = credentials.split(':')
 
-cmd = ['uhubctl', '-l', '1-1', '-p 2', '-a']
-#cmd = ['echo', 'value']
+#cmd = ['uhubctl', '-l', '1-1', '-p 2', '-a']
+cmd = ['echo', 'value']
 
 state_on = True
+
+# Create client
+client = mqtt.Client(client_id="{}/{}".format(device_name, service_name))
+client.username_pw_set(username, pw)
+client.enable_logger()
 
 
 def switch_on():
@@ -37,7 +42,10 @@ def switch_on():
     log.debug("send command: {}".format(' '.join(on_cmd)))
     ret = subprocess.check_output(on_cmd)
     log.debug("command returned: {}".format(ret))
-    state_on = True
+    if ret.decode('utf-8').endswith("power"):
+        log.info("usb power switched on")
+        state_on = True
+        publish_on(client)
 
 
 def switch_off():
@@ -47,21 +55,22 @@ def switch_off():
     log.debug("send command: {}".format(' '.join(off_cmd)))
     ret = subprocess.check_output(off_cmd)
     log.debug("command returned: {}".format(ret))
-    state_on = False
-
-
-# Create client
-client = mqtt.Client(client_id="{}/{}".format(device_name, service_name))
-client.username_pw_set(username, pw)
-client.enable_logger()
+    if ret.decode('utf-8').endswith("off"):
+        log.info("usb power switched off")
+        state_on = False
+        publish_off(client)
 
 
 def subscribe(client, userdata, flags, rc):
     client.subscribe(topic)
 
 
-def publish_on(client, userdata, flags, rc):
-    client.publish(topic, payload=1)
+def publish_on(client, userdata=None, flags=None, rc=None):
+    client.publish(publish_topic, payload=1)
+
+
+def publish_off(client, userdata=None, flags=None, rc=None):
+    client.publish(publish_topic, payload=0)
 
 
 # Function to process received message
